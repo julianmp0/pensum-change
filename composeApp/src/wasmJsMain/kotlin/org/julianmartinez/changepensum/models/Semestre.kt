@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Semestre(
     @SerialName("materias")
-    val materias: List<Materia>,
+    val materias: List<Subject>,
     @SerialName("semestre")
     val semestre: Int
 )

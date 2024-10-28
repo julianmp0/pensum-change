@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -41,6 +42,13 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+            implementation(libs.koin.compose)
+            implementation(libs.koin.composeVM)
+
+            //implementation("org.jetbrains.kotlin:kotlin-stdlib-js:2.0.21")
+            //implementation("org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.0.21")
+
+            implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
         }
     }
 }

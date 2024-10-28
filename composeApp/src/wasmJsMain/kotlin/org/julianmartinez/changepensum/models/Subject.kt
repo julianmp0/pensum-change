@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Materia(
+data class Subject(
     @SerialName("codigo")
     val codigo: String,
     @SerialName("creditos")
@@ -13,7 +13,10 @@ data class Materia(
     @SerialName("nombre")
     val nombre: String,
     @SerialName("practica")
-    val practica: Int,
+    val practica: Int = 0,
     @SerialName("teoria")
-    val teoria: Int
+    val teoria: Int = 0,
+    @SerialName("semestre")
+    val semestre: Int,
+    val isSelected:Boolean = false
 )
