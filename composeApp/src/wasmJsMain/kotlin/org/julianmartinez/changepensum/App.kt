@@ -7,6 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import changepensum.composeapp.generated.resources.Res
-import changepensum.composeapp.generated.resources.compose_multiplatform
 import changepensum.composeapp.generated.resources.github
 import changepensum.composeapp.generated.resources.logo_unisangil_horizontal
 import org.jetbrains.compose.resources.painterResource
@@ -34,12 +37,18 @@ import org.julianmartinez.changepensum.viewmodel.PensumStatistics
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 
-@OptIn(KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun App(
     viewModel: MainViewModel = koinViewModel()
 ) {
+
+
     MaterialTheme {
+
+        val size = calculateWindowSizeClass()
+
+
         val uriHandler = LocalUriHandler.current
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -52,11 +61,65 @@ fun App(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
+
+            if (size.widthSizeClass == WindowWidthSizeClass.Expanded) {
+
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    uiState.actualPensum?.let {
+                        PensumView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .weight(1f),
+                            pensum = it,
+                            sizeClass = size,
+                            pensumStatistics = uiState.actualPensumStatistics,
+                            header = {
+                                Column {
+                                    Text(
+                                        text = "Pensum actual",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+
+                                    Text(
+                                        text = "Selecciona las materias que has aprobado",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                }
+                            }
+                        ){
+                            viewModel.selectSubject(it)
+                        }
+                    }
+                    uiState.newPensum?.let {
+                        PensumView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .weight(1f),
+                            pensum = it,
+                            sizeClass = size,
+                            pensumStatistics = uiState.newPensumStatistics,
+                            header = {
+                                Column {
+                                    Text(
+                                        text = "Pensum nuevo",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                }
+                            },
+                        )
+                    }
+                }
+            }else{
                 uiState.actualPensum?.let {
                     PensumView(
                         modifier = Modifier
@@ -64,6 +127,7 @@ fun App(
                             .padding(16.dp)
                             .weight(1f),
                         pensum = it,
+                        sizeClass = size,
                         pensumStatistics = uiState.actualPensumStatistics,
                         header = {
                             Column {
@@ -73,16 +137,14 @@ fun App(
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                Text(
-                                    text = "Selecciona las materias que has aprobado",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
                             }
-                        }
-                    ){
-                        viewModel.selectSubject(it)
-                    }
+                        },
+                        {
+                            viewModel.selectSubject(it)
+                        },
+                    )
                 }
+
                 uiState.newPensum?.let {
                     PensumView(
                         modifier = Modifier
@@ -90,6 +152,7 @@ fun App(
                             .padding(16.dp)
                             .weight(1f),
                         pensum = it,
+                        sizeClass = size,
                         pensumStatistics = uiState.newPensumStatistics,
                         header = {
                             Column {
@@ -100,10 +163,11 @@ fun App(
                                 )
 
                             }
-                        }
+                        },
                     )
                 }
             }
+
 
 
             Column(
@@ -168,7 +232,7 @@ fun App(
                             painter = painterResource(Res.drawable.github),
                             contentDescription = "Github",
                             modifier = Modifier.height(40.dp).clickable {
-                                uriHandler.openUri("https://kotlinlang.org/docs/multiplatform.html")
+                                uriHandler.openUri("https://github.com/julianmp0/pensum-change")
                             }
                         )
                     }
@@ -207,6 +271,7 @@ fun App(
 fun PensumView(
     modifier: Modifier,
     pensum: Pensum,
+    sizeClass: WindowSizeClass,
     pensumStatistics: PensumStatistics,
     header: @Composable () -> Unit,
     onSubjectSelected: ((Subject) -> Unit)? = null
@@ -250,20 +315,21 @@ fun PensumView(
                 )
             }
         }
-        SemesterPensumView(pensum = pensum, onSubjectSelected = onSubjectSelected)
+        SemesterPensumView(pensum = pensum, onSubjectSelected = onSubjectSelected, sizeClass = sizeClass)
     }
 }
 
 @Composable
 fun SemesterPensumView(
     pensum: Pensum,
+    sizeClass: WindowSizeClass,
     onSubjectSelected: ((Subject) -> Unit)? = null
 ) {
     LazyColumn {
 
         pensum.groupBySemestre().forEach { (semestre, materias) ->
             item {
-                SemestreItem(semestre = Semestre(materias, semestre), onSubjectSelected = onSubjectSelected)
+                SemestreItem(semestre = Semestre(materias, semestre), sizeClass, onSubjectSelected = onSubjectSelected)
                 HorizontalDivider()
             }
         }
@@ -275,6 +341,7 @@ fun SemesterPensumView(
 @Composable
 fun SemestreItem(
     semestre: Semestre,
+    sizeClass: WindowSizeClass,
     onSubjectSelected: ((Subject) -> Unit)? = null
 ) {
 
@@ -289,10 +356,10 @@ fun SemestreItem(
             //modifier = Modifier.padding(bottom = 8.dp)
         )
         FlowRow(
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            //modifier = Modifier.padding(start = 16.dp, end = 16.dp),
         ) {
             semestre.materias.forEach { materia ->
-                SubjectItem(materia, onSubjectSelected)
+                SubjectItem(sizeClass, materia, onSubjectSelected)
                 //Text(materia.nombre)
             }
         }
@@ -301,6 +368,7 @@ fun SemestreItem(
 
 @Composable
 fun SubjectItem(
+    sizeClass: WindowSizeClass,
     subject: Subject,
     onSubjectSelected: ((Subject) -> Unit)? = null
 ) {
@@ -332,17 +400,20 @@ fun SubjectItem(
             modifier = Modifier.padding(8.dp)
         ) {
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = subject.codigo, style = MaterialTheme.typography.labelSmall)
-                Text(
-                    text = "Créditos: ${subject.creditos}",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold
-                )
+            if (sizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = subject.codigo, style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = "Créditos: ${subject.creditos}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+
 
             Text(
                 modifier = Modifier.fillMaxWidth(),

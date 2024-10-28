@@ -45,10 +45,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.composeVM)
 
-            //implementation("org.jetbrains.kotlin:kotlin-stdlib-js:2.0.21")
-            //implementation("org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.0.21")
+            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.7.0")
 
-            implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
         }
     }
 }
