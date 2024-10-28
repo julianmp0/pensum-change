@@ -53,8 +53,9 @@ fun App(
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         val openAlertDialog = remember { mutableStateOf(true) }
+        val openAlertDialogSmall = remember { mutableStateOf(false) }
 
-        LaunchedEffect(Unit){
+        LaunchedEffect(Unit) {
             viewModel.loadPensum()
         }
 
@@ -93,7 +94,7 @@ fun App(
                                     )
                                 }
                             }
-                        ){
+                        ) {
                             viewModel.selectSubject(it)
                         }
                     }
@@ -119,7 +120,7 @@ fun App(
                         )
                     }
                 }
-            }else{
+            } else {
                 uiState.actualPensum?.let {
                     PensumView(
                         modifier = Modifier
@@ -174,8 +175,7 @@ fun App(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp)
-                ,
+                    .padding(16.dp),
             ) {
                 Text(
                     text = buildAnnotatedString {
@@ -242,28 +242,74 @@ fun App(
 
 
         if (openAlertDialog.value) {
-            Dialog(
-                onDismissRequest = { openAlertDialog.value = false }
-            ) {
-                AlertDialog(
-                    onDismissRequest = { openAlertDialog.value = false },
-                    title = {
-                        Text("Verifica si es viable el cambio de pensum")
-                    },
-                    text = {
-                        Text("Selecciona las materias que has aprobado en el plan de estudios actual." +
-                                "\nLas materias homologadas en el nuevo plan de estudios se marcarán en color verde.")
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = { openAlertDialog.value = false }
-                        ) {
-                            Text("Ok")
-                        }
+            AlertDialog(
+                onDismissRequest = {
+                    openAlertDialog.value = false
+                    if (size.widthSizeClass != WindowWidthSizeClass.Expanded) {
+                        openAlertDialogSmall.value = true
                     }
-                )
-            }
+                },
+                icon = {
+                    Image(
+                        painter = painterResource(Res.drawable.logo_unisangil_horizontal),
+                        contentDescription = "Unisangil",
+                        modifier = Modifier.height(50.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        "Verifica si es viable el cambio de pensum",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Selecciona las materias que has aprobado en el plan de estudios actual." +
+                                "\nLas materias homologadas en el nuevo plan de estudios se marcarán en color verde.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            openAlertDialog.value = false
+                            if (size.widthSizeClass != WindowWidthSizeClass.Expanded) {
+                                openAlertDialogSmall.value = true
+                            }
+                        }
+                    ) {
+                        Text("Ok")
+                    }
+                }
+            )
         }
+
+
+        if (openAlertDialogSmall.value) {
+            AlertDialog(
+                onDismissRequest = { openAlertDialogSmall.value = false },
+                title = {
+                    Text(
+                        text = "Estas usando un dispositivo movil",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Para una mejor experiencia, usa un dispositivo con una pantalla mas grande o gira la pantalla.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { openAlertDialogSmall.value = false }
+                    ) {
+                        Text("Ok")
+                    }
+                }
+            )
+        }
+
     }
 }
 
@@ -275,7 +321,7 @@ fun PensumView(
     pensumStatistics: PensumStatistics,
     header: @Composable () -> Unit,
     onSubjectSelected: ((Subject) -> Unit)? = null
-){
+) {
     Column(
         modifier = modifier
     ) {
@@ -300,7 +346,7 @@ fun PensumView(
                     text = "Creditos restantes: ${pensumStatistics.remainingCredits}",
                     style = MaterialTheme.typography.titleSmall,
 
-                )
+                    )
 
                 Text(
                     text = "Materias aprobadas: ${pensumStatistics.approvedSubjects}",
@@ -372,7 +418,6 @@ fun SubjectItem(
     subject: Subject,
     onSubjectSelected: ((Subject) -> Unit)? = null
 ) {
-
 
 
     OutlinedCard(
